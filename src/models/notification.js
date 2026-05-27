@@ -39,7 +39,7 @@ const notificationSchema = new mongoose.Schema ({
   },
   createdAt: {
     type :Date,
-    dafault :Date.now
+    default :Date.now
   },
   error :{
     type :String
