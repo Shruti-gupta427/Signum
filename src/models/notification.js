@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const notificationSchema = new mongoose.Schema ({
     userId: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   channel:{
     type : String,
@@ -32,11 +33,13 @@ const notificationSchema = new mongoose.Schema ({
     default: 3
   },
   phone :{
-    type : String
+    type : String,
+    unique: true
   },
   email :{
-    type : String 
-  },
+    type : String ,
+    unique : true
+    },
   createdAt: {
     type :Date,
     default :Date.now
