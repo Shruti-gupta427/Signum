@@ -1,18 +1,17 @@
-const twilio = require('twilio');
-
-const client = twilio(
-  process.env.TWILIO_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
-
 const sendSMS = async ({ to, message }) => {
-  const result = await client.messages.create({
-    to,
-    from: process.env.TWILIO_PHONE,
-    body: message
+  const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+    method: 'POST',
+    headers: {
+      authorization: process.env.FAST2SMS_KEY
+    },
+    body: JSON.stringify({
+      route: 'q',
+      message,
+      language: 'english',
+      flash: 0,
+      numbers: to
+    })
   });
-  console.log(`SMS sent to ${to} → ${result.sid}`);
-  return { messageId: result.sid };
+  const data = await response.json();
+  return { messageId: data.request_id };
 };
-
-module.exports = { sendSMS };
