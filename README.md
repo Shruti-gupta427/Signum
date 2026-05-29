@@ -99,12 +99,15 @@ npm run dev
 ## Roadmap
 
 - [x] Priority queue
-- [x] WebSocket channel
-- [x] SSE channel
-- [ ] SMS via Twilio
-- [ ] Email via Nodemailer
-- [ ] Template support
-- [ ] Horizontal scaling with Redis adapter
+- [x] Event bus
+- [x] Rate limiting
+- [x] Connection manager
+- [x] Retry logic
+- [x] Email channel (Nodemailer)
+- [ ] SMS channel (plug in provider)
+- [ ] WebSocket channel
+- [ ] SSE channel
+- [ ] Express routes
 
 ---
 

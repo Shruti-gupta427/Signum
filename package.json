@@ -5,6 +5,7 @@
     "fast2sms": "^1.0.3",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.3",
+    "nodemailer": "^8.0.9",
     "twilio": "^6.0.2",
     "ws": "^8.21.0"
   },
