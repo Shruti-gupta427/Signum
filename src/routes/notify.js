@@ -23,6 +23,7 @@ router.post('/broadcast', async (req, res) => {
   for (const userId of userIds) {
     const saved = await Notification.create({
       userId,
+      channel,
       message,
       priority: priority ?? PRIORITY.MEDIUM,
       status: 'queued'
