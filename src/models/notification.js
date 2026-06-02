@@ -3,7 +3,6 @@ const notificationSchema = new mongoose.Schema ({
     userId: {
     type: String,
     required: true,
-    unique: true
   },
   channel:{
     type : String,
@@ -34,11 +33,9 @@ const notificationSchema = new mongoose.Schema ({
   },
   phone :{
     type : String,
-    unique: true
   },
   email :{
     type : String ,
-    unique : true
     },
   createdAt: {
     type :Date,
