@@ -77,12 +77,21 @@ npm run dev
 
 ## Limitations (honest)
 
-- No horizontal scaling yet — connection manager is 
+- No horizontal scaling yet - connection manager is 
   in-memory, so multiple instances won't share connections
-- SMS and Email channels are stubs — plug in 
+- SMS - plug in 
   Twilio or Nodemailer yourself
-- No auth middleware on most routes yet — don't 
+- No auth middleware on most routes yet - don't 
   expose this publicly without adding that
+
+  ## SMS Channel
+SMS delivery is currently stubbed.
+Indian SMS providers require DLT 
+registration (TRAI regulation).
+Production deployment needs:
+- DLT Entity registration
+- Approved message templates  
+- Provider integration (MSG91/Fast2SMS)
 
 ---
 
@@ -96,6 +105,7 @@ npm run dev
 
 ---
 
+
 ## Roadmap
 
 - [x] Priority queue
@@ -104,10 +114,10 @@ npm run dev
 - [x] Connection manager
 - [x] Retry logic
 - [x] Email channel (Nodemailer)
-- [ ] SMS channel (plug in provider)
-- [ ] WebSocket channel
-- [ ] SSE channel
-- [ ] Express routes
+- [x] SMS channel (plug in provider)
+- [x] WebSocket channel
+- [x] SSE channel
+- [x] Express routes
 
 ---
 

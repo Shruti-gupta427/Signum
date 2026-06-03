@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "axios": "^1.17.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "fast2sms": "^1.0.3",
