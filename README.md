@@ -5,7 +5,7 @@
 I built Signum because I wanted to understand how 
 notification systems like Swiggy or Zomato actually 
 work under the hood. Most tutorials just show you 
-how to use Firebase — this is the engine itself.
+how to use Firebase - this is the engine itself.
 
 Signum handles real-time delivery over WebSocket 
 and SSE, falls back to SMS/Email when users are 
@@ -19,7 +19,7 @@ offline, and never silently drops a notification.
 - Falls back to SMS or Email when user is offline
 - Prioritizes — an OTP always beats a promo message
 - Retries failed deliveries with exponential backoff
-- Tracks every notification — delivered, pending, failed
+- Tracks every notification - delivered, pending, failed
 - Rate limits per user so no one gets spammed
 
 ---
@@ -32,11 +32,11 @@ solves a real engineering problem.
 
 The interesting parts:
 
-- **Priority Queue** — built from scratch, no libraries
-- **Connection Manager** — tracks live WebSocket and SSE 
+- **Priority Queue** - built from scratch, no libraries
+- **Connection Manager** -tracks live WebSocket and SSE 
   connections using WeakMap so dead connections are 
   garbage collected automatically
-- **Retry logic** — exponential backoff so failed 
+- **Retry logic** - exponential backoff so failed 
   deliveries don't hammer the system
 
 ---
