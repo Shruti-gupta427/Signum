@@ -11,6 +11,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const process = async (notification) => {
   const { userId, channel, message } = notification;
 
+  // rate limit check
   if (!isAllowed(userId, channel)) {
     await Notification.findByIdAndUpdate(notification._id, {
       status: 'rate_limited'
@@ -18,8 +19,8 @@ const process = async (notification) => {
     return;
   }
 
-  const saved = await Notification.create({
-    ...notification,
+  // update status to processing
+  await Notification.findByIdAndUpdate(notification._id, {
     status: 'processing'
   });
 
@@ -27,24 +28,31 @@ const process = async (notification) => {
     if (channel === 'ws' || channel === 'sse') {
       if (isOnline(userId)) {
         await sendToUser(userId, message);
-        await Notification.findByIdAndUpdate(saved._id, {
+        await Notification.findByIdAndUpdate(notification._id, {
           status: 'delivered',
           deliveredAt: new Date()
         });
       } else {
-        await Notification.findByIdAndUpdate(saved._id, {
+        await Notification.findByIdAndUpdate(notification._id, {
           status: 'pending'
         });
       }
     } else if (channel === 'sms') {
-      await sendSMS({ to: notification.phone, message: message.body });
-      await Notification.findByIdAndUpdate(saved._id, {
+      await sendSMS({
+        to: notification.phone,
+        message: message.body
+      });
+      await Notification.findByIdAndUpdate(notification._id, {
         status: 'delivered',
         deliveredAt: new Date()
       });
     } else if (channel === 'email') {
-      await sendEmail({ to: notification.email, subject: message.subject, body: message.body });
-      await Notification.findByIdAndUpdate(saved._id, {
+      await sendEmail({
+        to: notification.email,
+        subject: message.subject,
+        body: message.body
+      });
+      await Notification.findByIdAndUpdate(notification._id, {
         status: 'delivered',
         deliveredAt: new Date()
       });
@@ -52,7 +60,7 @@ const process = async (notification) => {
   } catch (err) {
     const retried = scheduleRetry(notification, err);
     if (!retried) {
-      await Notification.findByIdAndUpdate(saved._id, {
+      await Notification.findByIdAndUpdate(notification._id, {
         status: 'failed',
         error: err.message
       });
@@ -65,6 +73,10 @@ const startProcessor = async () => {
   while (true) {
     if (!queue.isEmpty()) {
       const notification = queue.dequeue();
+      if (!notification) {
+        await sleep(100);
+        continue;
+      }
       await process(notification);
     } else {
       await sleep(100);
