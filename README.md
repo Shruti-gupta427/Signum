@@ -12,6 +12,9 @@ and SSE, falls back to SMS/Email when users are
 offline, and never silently drops a notification.
 
 ---
+## Live Demo
+API URL: https://signum-kmo3.onrender.com
+Test it use using InitialTesting.md
 
 ## What it does
 
