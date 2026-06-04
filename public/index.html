@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signum — Notification Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <div class="page">
+    <header class="hero">
+      <div class="logo">
+        <span class="logo-icon" aria-hidden="true">◈</span>
+        <span class="logo-text">Signum</span>
+      </div>
+      <h1>Signal everything,<br><span class="gradient-text">miss nothing.</span></h1>
+      <p class="tagline">A real-time notification engine with WebSocket, SSE, and offline fallbacks.</p>
+      <div class="hero-badges">
+        <span class="badge">WebSocket</span>
+        <span class="badge">SSE</span>
+        <span class="badge">SMS &amp; Email</span>
+      </div>
+      <nav class="hero-nav">
+        <a href="#test-guide">API test guide</a>
+        <a href="#api-reference">Reference</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card-grid">
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">⚡</div>
+          <h2>Real-time</h2>
+          <p>Deliver instantly over WebSocket or Server-Sent Events when users are online.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">📡</div>
+          <h2>Offline fallback</h2>
+          <p>SMS and email when connections drop — no silent failures.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">🎯</div>
+          <h2>Smart delivery</h2>
+          <p>Priority queue, exponential retries, and per-user rate limits.</p>
+        </article>
+      </section>
+
+      <!-- ========== TEST GUIDE ========== -->
+      <section id="test-guide" class="guide">
+        <div class="guide-header">
+          <h2>API testing guide</h2>
+          <p>Complete walkthrough — use Postman or curl. Replace emails and phone numbers with your own.</p>
+        </div>
+
+        <div class="base-urls">
+          <div class="url-box">
+            <span class="url-label">Local</span>
+            <code id="base-local">http://localhost:3000</code>
+          </div>
+          <div class="url-box">
+            <span class="url-label">Production</span>
+            <code>https://signum-kmo3.onrender.com</code>
+          </div>
+        </div>
+
+        <div class="prereq card">
+          <h3>Prerequisites</h3>
+          <ul>
+            <li>Postman (or curl) installed</li>
+            <li>Server running: <code>npm run dev</code></li>
+            <li>MongoDB connected</li>
+          </ul>
+        </div>
+
+        <nav class="toc" aria-label="Test steps">
+          <a href="#test-1">1. Email</a>
+          <a href="#test-2">2. SMS</a>
+          <a href="#test-3">3. Broadcast</a>
+          <a href="#test-4">4. SSE</a>
+          <a href="#test-5">5. History</a>
+          <a href="#test-6">6. Unread</a>
+          <a href="#test-7">7. Mark read</a>
+          <a href="#test-8">8. Priority</a>
+          <a href="#test-9">9. Rate limit</a>
+          <a href="#test-10">10. Retry</a>
+        </nav>
+
+        <!-- Test 1 -->
+        <article id="test-1" class="test-step">
+          <div class="test-title">
+            <span class="step-num">1</span>
+            <h3>Send email notification</h3>
+            <span class="method method-post">POST</span>
+          </div>
+          <p class="endpoint"><code>/notify</code></p>
+          <p class="test-note">Header: <code>Content-Type: application/json</code></p>
+          <details open>
+            <summary>Request body</summary>
+            <pre class="code-block"><code>{
+  "userId": "user_1",
+  "channel": "email",
+  "email": "your@gmail.com",
+  "message": {
+    "subject": "Signum Test",
+    "body": "Signal everything, miss nothing."
+  },
+  "priority": 0
+}</code></pre>
+          </details>
+          <details>
+            <summary>Expected response</summary>
+            <pre class="code-block"><code>{
+  "queued": true,
+  "id": "xxxxxxxxxxxxxxxx"
+}</code></pre>
+          </details>
+          <p class="expected">✓ Email received in inbox</p>
+        </article>
+
+        <!-- Test 2 -->
+        <article id="test-2" class="test-step">
+          <div class="test-title">
+            <span class="step-num">2</span>
+            <h3>Send SMS notification</h3>
+            <span class="method method-post">POST</span>
+          </div>
+          <p class="endpoint"><code>/notify</code></p>
+          <details open>
+            <summary>Request body</summary>
+            <pre class="code-block"><code>{
+  "userId": "user_1",
+  "channel": "sms",
+  "phone": "9876543210",
+  "message": {
+    "body": "Your OTP is 1234"
+  },
+  "priority": 0
+}</code></pre>
+          </details>
+          <details>
+            <summary>Expected response</summary>
+            <pre class="code-block"><code>{
+  "queued": true,
+  "id": "xxxxxxxxxxxxxxxx"
+}</code></pre>
+          </details>
+          <p class="expected">✓ Terminal shows: <code>[SMS] → 9876543210: Your OTP is 1234</code></p>
+        </article>
+
+        <!-- Test 3 -->
+        <article id="test-3" class="test-step">
+          <div class="test-title">
+            <span class="step-num">3</span>
+            <h3>Broadcast notification</h3>
+            <span class="method method-post">POST</span>
+          </div>
+          <p class="endpoint"><code>/notify/broadcast</code></p>
+          <details open>
+            <summary>Request body</summary>
+            <pre class="code-block"><code>{
+  "userIds": ["user_1", "user_2", "user_3"],
+  "channel": "email",
+  "message": {
+    "subject": "Broadcast Test",
+    "body": "This is a broadcast message!"
+  },
+  "priority": 2
+}</code></pre>
+          </details>
+          <details>
+            <summary>Expected response</summary>
+            <pre class="code-block"><code>{
+  "queued": true,
+  "recipients": 3
+}</code></pre>
+          </details>
+        </article>
+
+        <!-- Test 4 -->
+        <article id="test-4" class="test-step">
+          <div class="test-title">
+            <span class="step-num">4</span>
+            <h3>SSE connection</h3>
+            <span class="method method-get">GET</span>
+          </div>
+          <p class="endpoint"><code>/subscribe/sse?userId=user_1</code></p>
+          <p class="test-note">Open in browser (keeps connection open):</p>
+          <pre class="code-block code-inline"><code>http://localhost:3000/subscribe/sse?userId=user_1</code></pre>
+          <p class="expected">✓ Browser stays connected · ✓ Terminal shows connection added</p>
+          <p class="test-note">Then send this via <code>POST /notify</code>:</p>
+          <details open>
+            <summary>Notify body (SSE channel)</summary>
+            <pre class="code-block"><code>{
+  "userId": "user_1",
+  "channel": "sse",
+  "message": {
+    "title": "Live!",
+    "body": "SSE works!"
+  },
+  "priority": 1
+}</code></pre>
+          </details>
+          <p class="expected">✓ Browser receives notification instantly</p>
+        </article>
+
+        <!-- Test 5 -->
+        <article id="test-5" class="test-step">
+          <div class="test-title">
+            <span class="step-num">5</span>
+            <h3>Notification history</h3>
+            <span class="method method-get">GET</span>
+          </div>
+          <p class="endpoint"><code>/notifications/user_1</code></p>
+          <details open>
+            <summary>Expected response (sample)</summary>
+            <pre class="code-block"><code>[
+  {
+    "_id": "xxx",
+    "userId": "user_1",
+    "channel": "email",
+    "status": "delivered",
+    "priority": 0,
+    "createdAt": "2024-11-01T10:00:00.000Z"
+  }
+]</code></pre>
+          </details>
+        </article>
+
+        <!-- Test 6 -->
+        <article id="test-6" class="test-step">
+          <div class="test-title">
+            <span class="step-num">6</span>
+            <h3>Unread count</h3>
+            <span class="method method-get">GET</span>
+          </div>
+          <p class="endpoint"><code>/notifications/user_1/unread</code></p>
+          <details open>
+            <summary>Expected response</summary>
+            <pre class="code-block"><code>{
+  "count": 5
+}</code></pre>
+          </details>
+        </article>
+
+        <!-- Test 7 -->
+        <article id="test-7" class="test-step">
+          <div class="test-title">
+            <span class="step-num">7</span>
+            <h3>Mark as read</h3>
+            <span class="method method-patch">PATCH</span>
+          </div>
+          <p class="endpoint"><code>/notifications/:id/read</code></p>
+          <p class="test-note">Example: <code>PATCH /notifications/6512345abc123def456789/read</code></p>
+          <details open>
+            <summary>Expected response</summary>
+            <pre class="code-block"><code>{
+  "success": true
+}</code></pre>
+          </details>
+        </article>
+
+        <!-- Test 8 -->
+        <article id="test-8" class="test-step">
+          <div class="test-title">
+            <span class="step-num">8</span>
+            <h3>Priority queue test</h3>
+            <span class="method method-post">POST</span>
+          </div>
+          <p class="endpoint"><code>/notify</code> — send all three as fast as possible</p>
+          <details>
+            <summary>Request 1 — LOW (priority 3)</summary>
+            <pre class="code-block"><code>{
+  "userId": "user_2",
+  "channel": "email",
+  "email": "your@gmail.com",
+  "message": { "subject": "Promo", "body": "50% off!" },
+  "priority": 3
+}</code></pre>
+          </details>
+          <details>
+            <summary>Request 2 — CRITICAL (priority 0)</summary>
+            <pre class="code-block"><code>{
+  "userId": "user_2",
+  "channel": "email",
+  "email": "your@gmail.com",
+  "message": { "subject": "OTP", "body": "Your OTP is 9999" },
+  "priority": 0
+}</code></pre>
+          </details>
+          <details>
+            <summary>Request 3 — HIGH (priority 1)</summary>
+            <pre class="code-block"><code>{
+  "userId": "user_2",
+  "channel": "email",
+  "email": "your@gmail.com",
+  "message": { "subject": "Order", "body": "Order placed!" },
+  "priority": 1
+}</code></pre>
+          </details>
+          <p class="expected">✓ Email order: 1st OTP → 2nd Order → 3rd Promo</p>
+        </article>
+
+        <!-- Test 9 -->
+        <article id="test-9" class="test-step">
+          <div class="test-title">
+            <span class="step-num">9</span>
+            <h3>Rate limiter test</h3>
+            <span class="method method-post">POST</span>
+          </div>
+          <p class="endpoint"><code>/notify</code> — send the same SMS request 6 times quickly</p>
+          <details open>
+            <summary>Request body</summary>
+            <pre class="code-block"><code>{
+  "userId": "user_1",
+  "channel": "sms",
+  "phone": "9876543210",
+  "message": { "body": "Test OTP" },
+  "priority": 0
+}</code></pre>
+          </details>
+          <p class="test-note">Check MongoDB:</p>
+          <pre class="code-block"><code>db.notifications.find({ status: 'rate_limited' })</code></pre>
+          <p class="expected">✓ At least one notification with <code>rate_limited</code> status</p>
+        </article>
+
+        <!-- Test 10 -->
+        <article id="test-10" class="test-step">
+          <div class="test-title">
+            <span class="step-num">10</span>
+            <h3>Retry logic test</h3>
+            <span class="method method-post">POST</span>
+          </div>
+          <p class="test-note warn">Temporarily add to <code>src/channels/email.js</code>:</p>
+          <pre class="code-block"><code>throw new Error('Simulated failure');</code></pre>
+          <details open>
+            <summary>Request body</summary>
+            <pre class="code-block"><code>{
+  "userId": "user_1",
+  "channel": "email",
+  "email": "your@gmail.com",
+  "message": {
+    "subject": "Retry Test",
+    "body": "Testing retry logic"
+  },
+  "priority": 0
+}</code></pre>
+          </details>
+          <p class="expected">✓ Terminal: attempt 1 → retry 2s · attempt 2 → retry 4s · attempt 3 → failed</p>
+          <p class="test-note">MongoDB: <code>db.notifications.find({ status: 'failed' })</code></p>
+          <p class="test-note warn">Remove the error line after testing.</p>
+        </article>
+      </section>
+
+      <!-- ========== REFERENCE ========== -->
+      <section id="api-reference" class="guide reference">
+        <div class="guide-header">
+          <h2>API reference</h2>
+        </div>
+
+        <div class="ref-block">
+          <h3>Endpoints</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="method method-post">POST</span></td><td><code>/notify</code></td><td>Send single notification</td></tr>
+                <tr><td><span class="method method-post">POST</span></td><td><code>/notify/broadcast</code></td><td>Send to multiple users</td></tr>
+                <tr><td><span class="method method-get">GET</span></td><td><code>/subscribe/sse?userId=xxx</code></td><td>SSE connection</td></tr>
+                <tr><td><span class="method method-get">GET</span></td><td><code>/notifications/:userId</code></td><td>Notification history</td></tr>
+                <tr><td><span class="method method-get">GET</span></td><td><code>/notifications/:userId/unread</code></td><td>Unread count</td></tr>
+                <tr><td><span class="method method-patch">PATCH</span></td><td><code>/notifications/:id/read</code></td><td>Mark as read</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="ref-grid">
+          <div class="ref-block">
+            <h3>Status</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+                <tbody>
+                  <tr><td><code>queued</code></td><td>Added to queue</td></tr>
+                  <tr><td><code>processing</code></td><td>Being delivered</td></tr>
+                  <tr><td><code>delivered</code></td><td>Successfully sent</td></tr>
+                  <tr><td><code>pending</code></td><td>User offline</td></tr>
+                  <tr><td><code>failed</code></td><td>All retries exhausted</td></tr>
+                  <tr><td><code>rate_limited</code></td><td>Too many requests</td></tr>
+                  <tr><td><code>read</code></td><td>User read it</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="ref-block">
+            <h3>Priority</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Level</th><th>Value</th><th>Use case</th></tr></thead>
+                <tbody>
+                  <tr><td>CRITICAL</td><td><code>0</code></td><td>OTP, security alerts</td></tr>
+                  <tr><td>HIGH</td><td><code>1</code></td><td>Payments, orders</td></tr>
+                  <tr><td>MEDIUM</td><td><code>2</code></td><td>Reminders</td></tr>
+                  <tr><td>LOW</td><td><code>3</code></td><td>Promotions</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="ref-block">
+            <h3>Channels</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Channel</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr><td><code>email</code></td><td>Email via Nodemailer</td></tr>
+                  <tr><td><code>sms</code></td><td>SMS stub (console.log)</td></tr>
+                  <tr><td><code>ws</code></td><td>WebSocket real-time</td></tr>
+                  <tr><td><code>sse</code></td><td>Server-Sent Events</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="ref-block">
+            <h3>Rate limits</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Channel</th><th>Capacity</th><th>Refill</th></tr></thead>
+                <tbody>
+                  <tr><td>SMS</td><td>5 requests</td><td>1 per 10s</td></tr>
+                  <tr><td>Email</td><td>10 requests</td><td>1 per 2s</td></tr>
+                  <tr><td>WebSocket</td><td>100 requests</td><td>10 per 1s</td></tr>
+                  <tr><td>SSE</td><td>100 requests</td><td>10 per 1s</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="ref-block ref-wide">
+            <h3>Retry policy</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Attempt</th><th>Delay</th></tr></thead>
+                <tbody>
+                  <tr><td>1st retry</td><td>2 seconds</td></tr>
+                  <tr><td>2nd retry</td><td>4 seconds</td></tr>
+                  <tr><td>3rd retry</td><td>8 seconds</td></tr>
+                  <tr><td>Max attempts</td><td>3</td></tr>
+                  <tr><td>After max</td><td>Marked as <code>failed</code></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built with Node.js, Express, MongoDB &amp; WebSockets</p>
+    </footer>
+  </div>
+</body>
+</html>
